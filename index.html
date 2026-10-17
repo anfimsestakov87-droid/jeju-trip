@@ -135,6 +135,10 @@ a{color:inherit}
 .rline{margin-top:14px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12.5px}
 .rline span{background:color-mix(in srgb,var(--c) 11%,#fff);color:color-mix(in srgb,var(--c) 72%,#111);border-radius:999px;padding:1px 10px}
 .rline i{font-style:normal;color:var(--c);font-size:9px}
+.rline .rj{border:0;font:inherit;font-size:12.5px;cursor:pointer;background:color-mix(in srgb,var(--c) 16%,#fff);color:color-mix(in srgb,var(--c) 80%,#111);border-radius:999px;padding:1px 10px;font-weight:700;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--c) 40%,transparent);text-underline-offset:3px}
+.rline .rj:active{transform:scale(.95)}
+.flash{animation:flash 1.4s ease}
+@keyframes flash{0%,60%{box-shadow:0 0 0 3px var(--c),var(--shadow)}100%{box-shadow:var(--shadow)}}
 
 .flow{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
 .time{font-family:var(--f-num);font-weight:800;font-size:14px;color:var(--c)}
@@ -660,6 +664,7 @@ const DAYS=[
  tip:"新星岳遇到風雨或路滑，在山腳看芒草就好。東門市場和七星路走路 5 分鐘，車停市場停車場就好。",stay:"LJ941 22:15 起飛回台北"}
 ];
 const WX=[{"ic": "☀️", "t": "晴", "r": "涯月・西北海岸", "hi": 20, "lo": 15, "p": 0, "w": 0, "tip": ""}, {"ic": "⛅", "t": "晴時多雲", "r": "城山・東海岸", "hi": 18, "lo": 13, "p": 0, "w": 0, "tip": "城山頂上風大，帶件防風外套"}, {"ic": "☀️", "t": "晴朗", "r": "西歸浦・南岸", "hi": 20, "lo": 15, "p": 5, "w": 0, "tip": ""}, {"ic": "☀️", "t": "晴朗", "r": "安德・西南岸", "hi": 20, "lo": 15, "p": 5, "w": 0, "tip": ""}, {"ic": "☀️", "t": "晴朗", "r": "新星岳・中山間", "hi": 20, "lo": 15, "p": 5, "w": 0, "tip": "新星岳山頂風大"}];
+const ALIAS={"名號排骨":"名號","神話世界樂園":"神話主題樂園","沙溪・三房山":"三房山","London Bagel":"London Bagel"};
 const C=i=>`var(--d${i+1})`;
 const col=i=>getComputedStyle(document.documentElement).getPropertyValue(`--d${i+1}`).trim();
 
@@ -706,7 +711,7 @@ DAYS.forEach((x,i)=>{
     <div class="sticker">${esc(x.note)}</div>
     <div class="pad">
       <div class="wx"><span class="ic">${WX[i].ic}</span><div><b>${WX[i].t} ${Math.round(WX[i].lo)}–${Math.round(WX[i].hi)}°C</b><small>${WX[i].r}・降雨 ${WX[i].p}%</small></div>${WX[i].tip?`<em>${WX[i].tip}</em>`:""}</div>
-      <div class="rline">${x.route.map(r=>`<span>${esc(r)}</span>`).join("<i>▶</i>")}</div>
+      <div class="rline">${x.route.map(r=>{const k=ALIAS[r]||r;let id=null,j=0;x.items.forEach(it=>{if(it.p)return;const nm=it.s?it.s[1]:it.m[2];if(!id&&nm.includes(k))id=`d${i}-${j}`;j++});return id?`<button type="button" class="rj" data-jump="${id}">${esc(r)}</button>`:`<span>${esc(r)}</span>`}).join("<i>▶</i>")}</div>
       <div class="dprog"><div class="bar"><i id="bar${i}"></i></div><span id="cnt${i}"></span></div>
       <ol class="flow">${rows}</ol>
       <div class="daytip"><b>小提醒</b><span>${esc(x.tip)}</span><b>今晚住</b><span>${esc(x.stay)}</span></div>
@@ -800,6 +805,8 @@ document.addEventListener("click",e=>{
   if(s){const id=s.dataset.id;DONE[id]=!DONE[id];if(!DONE[id])delete DONE[id];saveDone();
     s.classList.toggle("on",!!DONE[id]);s.setAttribute("aria-pressed",!!DONE[id]);s.querySelector("span").textContent=DONE[id]?"已打卡":"打卡";
     s.closest("[data-card]").classList.toggle("on",!!DONE[id]);if(DONE[id]){s.classList.remove("pop");void s.offsetWidth;s.classList.add("pop")}prog();return}
+  const rj=e.target.closest("[data-jump]");
+  if(rj){const el=document.querySelector(`[data-card="${rj.dataset.jump}"]`);if(el){const off=(document.getElementById("tabs").offsetHeight||56)+16;scrollTo({top:el.getBoundingClientRect().top+scrollY-off,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash")}return}
   const g=e.target.closest("[data-go]");
   if(g){show(+g.dataset.go,true);return}
   const gs=e.target.closest("[data-gs]");
