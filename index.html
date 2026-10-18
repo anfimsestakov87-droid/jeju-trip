@@ -827,6 +827,13 @@ function show(i,scroll){i=Math.max(0,Math.min(4,i));
   if(scroll)document.getElementById("plan").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}
 let start=idx>=0&&idx<5?idx:0;try{const v=localStorage.getItem("jeju-day");if(v!==null&&!(idx>=0&&idx<5))start=+v}catch(e){}
 show(start,false);
+/* always open at top: no hash, no scroll restore */
+try{history.scrollRestoration="manual"}catch(e){}
+if(location.hash){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
+scrollTo(0,0);addEventListener("load",()=>scrollTo(0,0));addEventListener("pageshow",()=>scrollTo(0,0));
+document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute("href").slice(1);e.preventDefault();
+  const sm=matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+  if(!id||id==="top"){scrollTo({top:0,behavior:sm});return}const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:sm})});
 /* swipe between days */
 let sx=0,sy=0,inGal=false;days.addEventListener("touchstart",e=>{inGal=!!e.target.closest(".mgal");sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
 days.addEventListener("touchend",e=>{if(inGal)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
